@@ -1,0 +1,158 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    background-color: #f4f7f6;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Container to center content */
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header Styles */
+header {
+    background-color: #fff;
+    padding: 1rem 0;
+    border-bottom: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    color: #2a9d8f;
+    font-weight: 700;
+}
+
+/* Navigation Styles */
+nav#user-nav {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+nav#user-nav p {
+    margin: 0;
+    font-weight: 600;
+}
+
+/* Main Content Styles */
+main {
+    padding: 40px 0;
+}
+
+/* Card Style for content blocks */
+.card {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
+
+/* Grid layout for logged-in view */
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 30px;
+}
+
+/* Authentication Box Styles */
+.auth-box {
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.auth-box h2 {
+    color: #2a9d8f;
+}
+
+/* Form Elements (Inputs and Buttons) */
+input[type="email"],
+input[type="password"],
+input[type="text"],
+input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Important for padding */
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #2a9d8f;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #264653;
+}
+
+#logout-button {
+    background-color: #e76f51;
+}
+#logout-button:hover {
+    background-color: #f4a261;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background-color: #eee;
+    margin: 25px 0;
+}
+
+/* Donation Listings Styles */
+.donation-card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa;
+    transition: transform 0.2s ease;
+}
+
+.donation-card:hover {
+    transform: translateY(-3px);
+}
+
+.donation-card h4 {
+    margin: 0 0 8px 0;
+    color: #264653;
+}
+
+.donation-card p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Footer Styles */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 40px;
+    background-color: #fff;
+    border-top: 1px solid #ddd;
+}

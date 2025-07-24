@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KarmaBite - The Food Donate</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>KarmaBite</h1>
+            <nav id="user-nav"></nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Auth Section -->
+            <div id="auth-section"> 
+                <div class="auth-box">
+                    <h2>Welcome!</h2>
+                    <p>Let's reduce food waste together.</p>
+                    <div id="login-form"> <!-- Login Form will be injected by JS --> </div>
+                    <hr>
+                    <div id="signup-form"> <!-- Signup Form will be injected by JS --> </div>
+                </div>
+            </div>
+
+            <!-- Main Content (Logged In) -->
+            <div id="main-content" style="display: none;">
+                <div class="content-grid">
+                    <div id="donate-section" class="card">
+                        <h3>Have extra food? Donate it!</h3>
+                        <input type="text" id="food-name" placeholder="What food is it?">
+                        <input type="number" id="food-quantity" placeholder="Serves how many people?">
+                        <!-- UPDATED: Address input field added -->
+                        <input type="text" id="food-address" placeholder="Enter pickup address">
+                        <button id="donate-button">Donate Now</button>
+                    </div>
+                    <div id="listings-section" class="card">
+                        <h2>Available Food Donations</h2>
+                        <div id="food-listings">
+                            <p>Loading food donations...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 KarmaBite Hackathon Project</p>
+        </div>
+    </footer>
+
+    <!-- REMOVED: Google Maps script tag is no longer needed -->
+    
+    <script type="module">
+        // Firebase SDK Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, query, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = { apiKey: "AIzaSyDPPNJ5emOzXUoXU2kiB7AxFXnIMK3oqWE", authDomain: "karmabite-2f171.firebaseapp.com", projectId: "karmabite-2f171", storageBucket: "karmabite-2f171.appspot.com", messagingSenderId: "597414074422", appId: "1:597414074422:web:1c8f78b9e4641454bce097" };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // DOM Elements
+        document.getElementById('login-form').innerHTML = `<h4>Login</h4><input type="email" id="login-email" placeholder="Email"><input type="password" id="login-password" placeholder="Password"><button id="login-button">Login</button>`;
+        document.getElementById('signup-form').innerHTML = `<h4>Create an Account</h4><input type="email" id="signup-email" placeholder="Email"><input type="password" id="signup-password" placeholder="Password"><button id="signup-button">Sign Up</button>`;
+        const authSection = document.getElementById('auth-section');
+        const mainContent = document.getElementById('main-content');
+        const userNav = document.getElementById('user-nav');
+        const foodNameInput = document.getElementById('food-name');
+        const foodQuantityInput = document.getElementById('food-quantity');
+        const foodAddressInput = document.getElementById('food-address'); // UPDATED: Address input element
+        const donateButton = document.getElementById('donate-button');
+        const foodListingsDiv = document.getElementById('food-listings');
+        
+        // REMOVED: All map-related variables and functions are gone.
+
+        // --- AUTHENTICATION LOGIC ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) { // User is signed in
+                authSection.style.display = 'none';
+                mainContent.style.display = 'block';
+                userNav.innerHTML = `<p>Welcome, ${user.email}</p><button id="logout-button">Logout</button>`;
+                document.getElementById('logout-button').addEventListener('click', () => signOut(auth));
+                listenForDonations();
+            } else { // User is signed out
+                authSection.style.display = 'block';
+                mainContent.style.display = 'none';
+                userNav.innerHTML = '';
+            }
+        });
+
+        // --- FIRESTORE 'CREATE' LOGIC ---
+        donateButton.addEventListener('click', async () => {
+            const foodName = foodNameInput.value;
+            const foodQuantity = foodQuantityInput.value;
+            const foodAddress = foodAddressInput.value; // UPDATED: Get address from input
+            const user = auth.currentUser;
+
+            if (!foodName || !foodQuantity || !foodAddress || !user) {
+                return alert('Please fill all fields and be logged in.');
+            }
+
+            donateButton.disabled = true;
+            donateButton.textContent = 'Donating...';
+
+            try {
+                // Add donation data to Firestore
+                await addDoc(collection(db, "donations"), {
+                    donorEmail: user.email,
+                    food: foodName,
+                    quantity: Number(foodQuantity),
+                    address: foodAddress, // UPDATED: Save address instead of location
+                    createdAt: serverTimestamp()
+                });
+
+                alert('Thank you for your donation!');
+                foodNameInput.value = '';
+                foodQuantityInput.value = '';
+                foodAddressInput.value = '';
+
+            } catch (error) {
+                console.error("Donation Error: ", error);
+                alert('An error occurred. Please try again.');
+            } finally {
+                donateButton.disabled = false;
+                donateButton.textContent = 'Donate Now';
+            }
+        });
+
+        // --- FIRESTORE 'READ' LOGIC ---
+        function listenForDonations() {
+            const q = query(collection(db, "donations"), orderBy("createdAt", "desc"));
+            onSnapshot(q, (querySnapshot) => {
+                foodListingsDiv.innerHTML = '';
+
+                if (querySnapshot.empty) {
+                    foodListingsDiv.innerHTML = '<p>No food donations available right now.</p>';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const donation = doc.data();
+                    
+                    // Create the listing card
+                    const card = document.createElement('div');
+                    card.className = 'donation-card';
+                    // UPDATED: Display address in the card
+                    card.innerHTML = `
+                        <h4>${donation.food}</h4>
+                        <p>Serves: ${donation.quantity}</p>
+                        <p>Address: ${donation.address}</p>
+                        <p><small>Donated by: ${donation.donorEmail}</small></p>
+                    `;
+                    foodListingsDiv.appendChild(card);
+                });
+            });
+        }
+        
+        // Simplified auth functions for brevity
+        document.getElementById('signup-button').addEventListener('click', () => { const e = document.getElementById('signup-email').value, p = document.getElementById('signup-password').value; createUserWithEmailAndPassword(auth, e, p).then(() => { alert('Signup successful!'); }).catch(err => alert(err.message)); });
+        document.getElementById('login-button').addEventListener('click', () => { const e = document.getElementById('login-email').value, p = document.getElementById('login-password').value; signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message)); });
+    </script>
+</body>
+</html>
